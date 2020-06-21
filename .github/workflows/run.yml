@@ -1,0 +1,33 @@
+name: IBM Cloud Foundry Auto Restart
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 5 * * 1'
+
+jobs:
+  ibm-cf-restart:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install IBM CLI
+      run: curl -sL https://ibm.biz/idt-installer | bash
+
+    - name: Login IBM Cloud
+      run: |
+        ibmcloud login -u ${{ secrets.ACCOUNT }} -p ${{ secrets.PWD }} -r ${{ secrets.REGION }}
+
+    - name: Target IBM Cloud
+      run: |
+        ibmcloud target -g Default
+        ibmcloud target --cf
+        ibmcloud cf install
+
+    - name: Restart IBM Cloud
+      run: |
+        ibmcloud cf restart ${{ secrets.APP_NAME }}
